@@ -1,49 +1,46 @@
 ﻿using Core;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 
-namespace Api
+namespace Api;
+
+public class AzureBlobStorageService : IStorageService
 {
-    public class AzureBlobStorageService : IStorageService
+    private readonly BlobContainerClient _blobContainer;
+
+    public AzureBlobStorageService(IConfiguration configuration, string containerName)
     {
-        private readonly CloudBlobContainer _blobContainer;
-
-        public AzureBlobStorageService(IConfiguration configuration, string containerName)
+        var connectionString = configuration.GetConnectionString("AzureBlobStorage");
+        if (string.IsNullOrEmpty(connectionString))
         {
-            var connectionString = configuration.GetConnectionString("AzureBlobStorage");
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                throw new MissingFieldException($"{nameof(AzureBlobStorageService)} connection string is missing.");
-            }
-
-            var storageAccount = CloudStorageAccount.Parse(connectionString);
-            var blobClient = storageAccount.CreateCloudBlobClient();
-            _blobContainer = blobClient.GetContainerReference(containerName);
-            _blobContainer.CreateIfNotExistsAsync().Wait();
-            _blobContainer.SetPermissionsAsync(new BlobContainerPermissions { PublicAccess = BlobContainerPublicAccessType.Blob });
+            throw new MissingFieldException($"{nameof(AzureBlobStorageService)} connection string is missing.");
         }
 
-        public async Task<string> UploadFileAsync(string blobName, Stream stream)
-        {
-            var blob = _blobContainer.GetBlockBlobReference(blobName);
-            await blob.UploadFromStreamAsync(stream);
-            return blob.Uri.ToString();
-        }
+        _blobContainer = new BlobContainerClient(connectionString, containerName);
+        _blobContainer.CreateIfNotExists();
+        _blobContainer.SetAccessPolicy(PublicAccessType.Blob);
+    }
 
-        public async Task<Stream> DownloadFileAsync(string blobName)
-        {
-            var blob = _blobContainer.GetBlockBlobReference(blobName);
-            var memoryStream = new MemoryStream();
-            await blob.DownloadToStreamAsync(memoryStream);
-            memoryStream.Seek(0, SeekOrigin.Begin);
-            return memoryStream;
-        }
+    public async Task<string> UploadFileAsync(string blobName, Stream stream)
+    {
+        var blobClient = _blobContainer.GetBlobClient(blobName);
+        await blobClient.UploadAsync(stream, overwrite: true);
+        return blobClient.Uri.ToString();
+    }
 
-        public async Task<bool> DeleteFileAsync(string blobName)
-        {
-            return await _blobContainer
-                .GetBlockBlobReference(blobName)
-                .DeleteIfExistsAsync();
-        }
+    public async Task<Stream> DownloadFileAsync(string blobName)
+    {
+        var blobClient = _blobContainer.GetBlobClient(blobName);
+        var memoryStream = new MemoryStream();
+        await blobClient.DownloadToAsync(memoryStream);
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        return memoryStream;
+    }
+
+    public async Task<bool> DeleteFileAsync(string blobName)
+    {
+        var blobClient = _blobContainer.GetBlobClient(blobName);
+        var response = await blobClient.DeleteIfExistsAsync();
+        return response.Value;
     }
 }
