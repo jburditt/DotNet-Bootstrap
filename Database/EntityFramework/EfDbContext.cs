@@ -5,10 +5,10 @@ namespace Database
 {
     public class EfDbContext : DbContext
     {
-        public DbSet<User> Users { get; set; }
-        public DbSet<Gym> Gyms { get; set; }
-        public DbSet<GymEquipment> GymEquipment { get; set; }
-        public DbSet<Equipment> Equipment { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Gym> Gyms { get; set; }
+        public virtual DbSet<GymEquipment> GymEquipment { get; set; }
+        public virtual DbSet<Equipment> Equipment { get; set; }
 
         public EfDbContext(DbContextOptions<EfDbContext> options) : base(options) { }
 

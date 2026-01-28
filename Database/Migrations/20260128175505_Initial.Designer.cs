@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database.Migrations
 {
     [DbContext(typeof(EfDbContext))]
-    [Migration("20250921163917_AddEquipment")]
-    partial class AddEquipment
+    [Migration("20260128175505_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,6 +60,23 @@ namespace Database.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Gyms");
+                });
+
+            modelBuilder.Entity("Core.GymEquipment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EquipmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GymEquipment");
                 });
 
             modelBuilder.Entity("Core.User", b =>

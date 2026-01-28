@@ -76,26 +76,6 @@ namespace Database.Migrations
                     b.ToTable("GymEquipment");
                 });
 
-            modelBuilder.Entity("Core.Schedule", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
-
-                    b.PrimitiveCollection<string>("MuscleGroupFilter")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Schedule");
-                });
-
             modelBuilder.Entity("Core.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -121,45 +101,6 @@ namespace Database.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Core.WorkoutLog", b =>
-                {
-                    b.Property<Guid>("ScheduleId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ExerciseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<int>("Reps")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Sets")
-                        .HasColumnType("int");
-
-                    b.Property<double>("Weight")
-                        .HasColumnType("float");
-
-                    b.HasKey("ScheduleId", "ExerciseId", "Date");
-
-                    b.ToTable("WorkoutLog");
-                });
-
-            modelBuilder.Entity("Core.WorkoutLog", b =>
-                {
-                    b.HasOne("Core.Schedule", null)
-                        .WithMany("Workouts")
-                        .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Core.Schedule", b =>
-                {
-                    b.Navigation("Workouts");
                 });
 #pragma warning restore 612, 618
         }
